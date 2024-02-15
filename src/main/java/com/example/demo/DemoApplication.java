@@ -14,28 +14,27 @@ public class DemoApplication implements CommandLineRunner {
     }
 
     @Override
-    public void run(String... args) throws Exception {
+    public void run(String... args) {
         //System.out.println("yes it works");
 
         class H2DatabaseExample {
-
             public static void DatabaseImplementation(String[] args) {
                 Connection connection = null;
                 try {
                     connection = H2DatabaseConnection.connect();
 
                     // Example: Select all rows from a table
-                    String query = "SELECT * FROM your_table_name";
+                    String query = "SELECT * FROM TEST";
                     try (PreparedStatement preparedStatement = connection.prepareStatement(query);
                          ResultSet resultSet = preparedStatement.executeQuery()) {
 
                         while (resultSet.next()) {
                             // Process each row
                             int id = resultSet.getInt("id");
-                            String name = resultSet.getString("feeling");
+                            String name = resultSet.getString("name");
 
                             // Perform operations with retrieved data
-                            System.out.println("ID: " + id + ", Feeling: " + name);
+                            System.out.println("ID: " + id + ", NAME: " + name);
                         }
                     }
                 } catch (SQLException e) {
@@ -49,7 +48,7 @@ public class DemoApplication implements CommandLineRunner {
                 public static Connection connect() {
                     try {
                         Class.forName("org.h2.Driver");
-                        return DriverManager.getConnection("jdbc:h2:/path/to/your/database", "username", "password");
+                        return DriverManager.getConnection("jdbc:h2:~/test", "anastasijaizv", "izvrtu");
                     } catch (ClassNotFoundException | SQLException e) {
                         throw new RuntimeException("Error connecting to the database", e);
                     }
