@@ -1,8 +1,10 @@
 package com.example.demo;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 public interface RecordService {
-    public void saveRecord(Record record);
+    public Record saveRecord(Record record);
 
-    public Iterable<Record> getRecords();
-
+    public Page<Record> getPagedRecords(Pageable pageable);
 }
