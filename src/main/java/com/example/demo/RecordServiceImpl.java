@@ -15,7 +15,13 @@ public class RecordServiceImpl implements RecordService{
     public Record saveRecord(Record record) {
         return recordRepository.save(record);
     }
+
+    @Override
     public Page<Record> getPagedRecords(Pageable pageable) {
+        return null;
+    }
+
+    public Page<Record> getPagedPrompts(Pageable pageable) {
         return recordRepository.findAll(pageable);
     }
 
