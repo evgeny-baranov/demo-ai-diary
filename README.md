@@ -8,7 +8,10 @@ For data storage will be used H2 Database.
 
 **Project development**
 
-1. Update UML diagram 19.03.
-2. Create telegram bot 20.03
-3. Set up Open AI API and database dependancies 24.03
-4. Design schema for database and store data 30.03
+| **Task**                   | **Deadline** | **Time**      | **Status**              | Urgency       |
+| -------------------------- | ------------ | ------------- | ----------------------- | ------------- |
+| Update UML diagram         | 19.03        | Past deadline | Not started             |               |
+| Create telegram bot        | 20.03        | \-            | :ballot_box_with_check: |               |
+| Set up database dependancy | 24.03        | Past deadline | In process              | :exclamation: |
+| Design schema for database | 29.03        | Upcoming      | Not started             |               |
+| Create dispatcher          | 07.04        | Upcoming      | Not started             |               |
