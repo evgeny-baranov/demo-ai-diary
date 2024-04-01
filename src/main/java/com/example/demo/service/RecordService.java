@@ -1,10 +1,10 @@
-package com.example.demo;
+package com.example.demo.service;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 public interface RecordService {
-    public Record saveRecord(Record prompt);
+    Record saveRecord(Record record);
 
-    public Page<Record> getPagedRecords(Pageable pageable);
+    Page<Record> getPagedRecords(Pageable pageable);
 }

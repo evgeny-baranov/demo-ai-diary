@@ -56,11 +56,11 @@ public class TelegramBot extends TelegramLongPollingBot {
             switch (messageText) {
                 case "/start":
 
-                        startCommandReceived(chatId, update.getMessage().getChat().getFirstName());
-                        break;
+                    startCommandReceived(chatId, update.getMessage().getChat().getFirstName());
+                    break;
                 default:
 
-                        sendMessage(chatId, "Sorry, command was not recognised");
+                    sendMessage(chatId, "Sorry, command was not recognised");
             }
 
         }
@@ -72,7 +72,7 @@ public class TelegramBot extends TelegramLongPollingBot {
         sendMessage(chatId, answer);
     }
 
-    private void sendMessage(long chatId, String textToSend)  {
+    private void sendMessage(long chatId, String textToSend) {
         SendMessage message = new SendMessage();
         message.setChatId(String.valueOf(chatId));
         message.setText(textToSend);

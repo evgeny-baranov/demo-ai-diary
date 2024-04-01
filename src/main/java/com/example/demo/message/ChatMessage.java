@@ -1,4 +1,4 @@
-package com.example.demo.Message;
+package com.example.demo.message;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -11,6 +11,4 @@ public class ChatMessage {
     private String role;
 
     private String content;
-
-
 }

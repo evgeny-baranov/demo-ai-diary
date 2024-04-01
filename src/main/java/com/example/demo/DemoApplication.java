@@ -10,22 +10,20 @@ import org.springframework.web.client.RestTemplate;
 public class DemoApplication {
     @Value("${openai.key}")
     private String openaiApiKey;
+
     public static void main(String[] args) {
         SpringApplication.run(DemoApplication.class, args);
     }
 
     @Bean
-    public RestTemplate restTemplate()
-    {
-        RestTemplate restTemplate=new RestTemplate();
+    public RestTemplate restTemplate() {
+        RestTemplate restTemplate = new RestTemplate();
         restTemplate.getInterceptors().add(((request, body, execution) -> {
             request.getHeaders().add("Authorization",
-                    "Bearer "+openaiApiKey);
+                    "Bearer " + openaiApiKey);
 
-            return execution.execute(request,body);
+            return execution.execute(request, body);
         }));
         return restTemplate;
     }
-
-
 }

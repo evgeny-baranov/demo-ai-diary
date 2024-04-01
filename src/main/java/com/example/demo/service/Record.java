@@ -1,4 +1,4 @@
-package com.example.demo;
+package com.example.demo.service;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -30,5 +30,4 @@ public class Record {
     private LocalDateTime updated;
 
     private String text;
-
 }

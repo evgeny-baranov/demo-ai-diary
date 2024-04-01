@@ -1,5 +1,6 @@
-package com.example.demo;
+package com.example.demo.service;
 
+import com.example.demo.RecordRepository;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -7,10 +8,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 @Service
-public class RecordServiceImpl implements RecordService{
+public class RecordServiceImpl implements RecordService {
 
     @Autowired
-    private RecordRepository  recordRepository;
+    private RecordRepository recordRepository;
 
     public Record saveRecord(Record record) {
         return recordRepository.save(record);
