@@ -19,21 +19,17 @@ public class RecordServiceImpl implements RecordService {
 
     @Override
     public Page<Record> getPagedRecords(Pageable pageable) {
-        return null;
-    }
-
-    public Page<Record> getPagedPrompts(Pageable pageable) {
         return recordRepository.findAll(pageable);
     }
 
-    @PostConstruct
-    public void init() {
-        for (int i = 0; i < 10; i++) {
-            Record r = new Record();
-            r.setText("test text here " + i);
-            saveRecord(r);
-        }
-    }
+//    @PostConstruct
+//    public void init() {
+//        for (int i = 0; i < 10; i++) {
+//            Record r = new Record();
+//            r.setText("test text here " + i);
+//            saveRecord(r);
+//        }
+//    }
 }
 
 
