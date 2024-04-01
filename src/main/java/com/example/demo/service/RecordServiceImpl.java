@@ -1,7 +1,7 @@
 package com.example.demo.service;
 
-import com.example.demo.RecordRepository;
-import jakarta.annotation.PostConstruct;
+import com.example.demo.domain.RecordRepository;
+import com.example.demo.domain.Record;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
