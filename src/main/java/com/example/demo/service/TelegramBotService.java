@@ -1,8 +1,9 @@
 package com.example.demo.service;
 
 import com.example.demo.config.BotConfig;
-import com.example.demo.domain.User;
+import com.example.demo.events.PhotoMessageEvent;
 import com.example.demo.events.StartCommandEvent;
+import com.example.demo.events.TextMessageEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
@@ -10,7 +11,6 @@ import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.commands.SetMyCommands;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
 import org.telegram.telegrambots.meta.api.objects.commands.scope.BotCommandScopeDefault;
@@ -61,28 +61,30 @@ public class TelegramBotService extends TelegramLongPollingBot {
 
     @Override
     public void onUpdateReceived(Update update) {
+        if (update.hasMessage() && update.getMessage().hasPhoto()) {
+            eventPublisher.publishEvent(
+                    new PhotoMessageEvent(update.getMessage())
+            );
+        }
         if (update.hasMessage() && update.getMessage().hasText()) {
             String messageText = update.getMessage().getText();
-            long chatId = update.getMessage().getChatId();
-            log.info(update.getMessage().toString());
-            log.info(update.getMessage().getFrom().toString());
 
             switch (messageText) {
                 case "/start":
                     eventPublisher.publishEvent(
-                            new StartCommandEvent(update.getMessage())
+                            new StartCommandEvent(
+                                    update.getMessage()
+                            )
                     );
-                    startCommandReceived(update.getMessage());
                     break;
                 default:
-                    sendMessage(chatId, "Sorry, command was not recognised");
+                    eventPublisher.publishEvent(
+                            new TextMessageEvent(
+                                    update.getMessage()
+                            )
+                    );
             }
-
         }
-    }
-
-    private void startCommandReceived(Message message) {
-
     }
 
     public void sendMessage(long chatId, String textToSend) {
