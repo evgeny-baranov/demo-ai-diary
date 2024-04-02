@@ -1,14 +1,16 @@
 package com.example.demo.service;
 
+import com.example.demo.domain.MessageType;
+import com.example.demo.domain.Record;
 import com.example.demo.domain.User;
-import com.example.demo.events.PhotoMessageEvent;
-import com.example.demo.events.StartCommandEvent;
-import com.example.demo.events.TextMessageEvent;
+import com.example.demo.events.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
+
+import java.util.stream.Collectors;
 
 @Component
 @Slf4j
@@ -26,9 +28,12 @@ public class Dispatcher {
     @Autowired
     ChatGptService chatGptService;
 
+    @Autowired
+    RecordService recordService;
+
     @EventListener
     void onStartMessageReceived(StartCommandEvent event) {
-        User user = userService.addOrCreateTelegramUser(event.getFrom());
+        User user = getUser(event);
         telegramBotService.sendMessage(
                 event.getChatId(),
                 "Hi, "
@@ -46,14 +51,13 @@ public class Dispatcher {
 
     @EventListener
     void onTextMessageReceived(TextMessageEvent event) {
-        log.info("onTextMessageReceived: " + event.getMessage().getText());
-        User user = userService.addOrCreateTelegramUser(event.getFrom());
+        User user = getUser(event);
         try {
             telegramBotService.sendMessage(
                     event.getChatId(),
                     chatGptService.getOpenaiResponse(
                             getSystemPrompt(user),
-                            event.getMessage().getText()
+                            event.getMessageText()
                     )
             );
         } catch (Exception error) {
@@ -67,15 +71,41 @@ public class Dispatcher {
         }
     }
 
+    private User getUser(MessageContainerEvent event) {
+        return userService.addOrCreateTelegramUser(event.getFrom());
+    }
+
     private String getSystemPrompt(User user) {
         return "Make connection to user " + user.getTelegramUser().getFirstName()
-                + " on language " + user.getTelegramUser().getLanguageCode();
+                + " on language " + user.getTelegramUser().getLanguageCode()
+                + " history: " + recordService.getLast10(user).stream().map(
+                        r -> (r.getMessageType() == MessageType.fromBot
+                                ? "Chat GPT: "
+                                : r.getUser().getTelegramUser().getFirstName() + ": ")
+
+                + r.getText()
+                ).collect(Collectors.joining(" "));
     }
 
     @EventListener
     void onPhotoMessageReceived(PhotoMessageEvent event) {
-        log.info("onPhotoMessageReceived: "
-                + event.getMessage().getPhoto().toString()
+        telegramBotService.sendMessage(
+                event.getChatId(),
+                "Sorry, i can not understand photo messages, but we working on it."
         );
+    }
+
+    @EventListener
+    void onAnyMessage(MessageContainerEvent event) {
+        log.info("onAnyMessage: " + event.toString());
+        User user = getUser(event);
+        Record r = new Record();
+        r.setUser(user);
+        r.setMessageType(event.getMessageType());
+        r.setText(event.getMessageText());
+
+        r = recordService.saveRecord(r);
+
+        log.info(r.toString());
     }
 }
