@@ -2,16 +2,24 @@ package com.example.demo.service;
 
 import com.example.demo.config.TodoToolsConfig;
 import com.example.demo.domain.Record;
-import com.example.demo.message.CompletionResponse;
-import com.example.demo.message.openai.*;
+import com.example.demo.domain.User;
+import com.example.demo.events.BotReplyEvent;
+import com.example.demo.message.openai.CompletionResponse;
+import com.example.demo.message.openai.CompletionRequest;
+import com.example.demo.message.openai.Message;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 @Service
 @Slf4j
 public class ChatGptServiceImpl implements ChatGptService {
+    @Value("${bot.prompt}")
+    public String generalPrompt;
+
     @Autowired
     RestTemplate restTemplate;
 
@@ -21,17 +29,27 @@ public class ChatGptServiceImpl implements ChatGptService {
     @Autowired
     TodoToolsConfig todoToolsConfig;
 
-    public String getOpenaiResponse(
+    @Autowired
+    ApplicationEventPublisher eventPublisher;
+
+    private String getGeneralPrompt(User user) {
+        return generalPrompt.formatted(
+                user.getTelegramUser().getFirstName(),
+                user.getTelegramUser().getLanguageCode()
+        );
+    }
+
+    public void makeCompletionRequest(
             long chatId,
-            String system,
-            String prompt
+            User user,
+            String message
     ) {
         CompletionRequest request = new CompletionRequest();
 
         // add system prompt
         request.addMessage(new Message(
                 Message.MessageRole.system,
-                system
+                this.getGeneralPrompt(user)
         ));
 
         // add message history
@@ -40,6 +58,9 @@ public class ChatGptServiceImpl implements ChatGptService {
                 .map(
                         record -> {
                             try {
+                                log.info(
+                                        record.getChatRole() + " : " +
+                                        record.getText());
                                 return new Message(
                                         record.getChatRole(),
                                         record.getText()
@@ -53,7 +74,7 @@ public class ChatGptServiceImpl implements ChatGptService {
         // add new user message
         request.addMessage(new Message(
                 Message.MessageRole.user,
-                prompt
+                message
         ));
 
         // add tools section
@@ -71,9 +92,15 @@ public class ChatGptServiceImpl implements ChatGptService {
                 CompletionResponse.class
         );
 
-        log.info(response.toString());
-
         assert response != null;
-        return response.getChoices().get(0).getMessage().getContent();
+        response.getChoices().stream()
+                .map(choice -> new BotReplyEvent(
+                        new BotReplyEvent.DTO(
+                                choice,
+                                user,
+                                chatId
+                        )
+                ))
+                .forEach(choice -> this.eventPublisher.publishEvent(choice));
     }
 }

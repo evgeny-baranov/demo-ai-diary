@@ -6,20 +6,17 @@ import com.example.demo.events.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 @Component
 @Slf4j
+@PropertySource("application.properties")
 public class MessageDispatcher {
-    @Value("${prompt.general}")
-    public String generalPrompt;
 
+    @Value("${bot.greetings}")
+    private String greetings;
     @Autowired
     UserService userService;
 
@@ -32,62 +29,25 @@ public class MessageDispatcher {
     @Autowired
     RecordService recordService;
 
-    @Autowired
-    JsonUtilService jsonUtilService;
-
-    @Autowired
-    ApplicationEventPublisher eventPublisher;
-
-    @Autowired
-    TaskService taskService;
-
     @EventListener
     void onStartMessageReceived(StartMenuEvent event) {
         User user = getUser(event);
         telegramBotService.sendMessage(
                 event.getChatId(),
-                "Hi, "
-                + user.getTelegramUser().getFirstName()
-                + ", nice to meet you!"
-        );
-    }
-
-    @EventListener
-    void onTaskListMessageReceived(TaskListMenuEvent event) {
-        User user = getUser(event);
-        taskService.getTasksForUser(user);
-
-        telegramBotService.sendMessage(
-                event.getChatId(),
-                "Hi, "
-                + user.getTelegramUser().getFirstName()
-                + ", nice to meet you!"
+                greetings.formatted(
+                        user.getTelegramUser().getFirstName()
+                )
         );
     }
 
     @EventListener
     void onTextMessageReceived(TextMessageEvent event) {
-        User user = getUser(event);
         try {
-            event.getChatId();
-            String openaiResponse = chatGptService.getOpenaiResponse(
+            chatGptService.makeCompletionRequest(
                     event.getChatId(),
-                    getGeneralPrompt(user),
+                    getUser(event),
                     event.getMessageText()
             );
-
-            if (jsonUtilService.isJson(openaiResponse)) {
-                jsonUtilService.getListOfCommands(
-                        user, event.getChatId(), openaiResponse
-                ).forEach(commandDto -> eventPublisher.publishEvent(
-                        new BotCommandEvent(commandDto)
-                ));
-            } else {
-                telegramBotService.sendMessage(
-                        event.getChatId(),
-                        openaiResponse
-                );
-            }
         } catch (Exception error) {
             log.error(error.getMessage());
         }
@@ -95,22 +55,6 @@ public class MessageDispatcher {
 
     private User getUser(MessageContainerEvent event) {
         return userService.addOrCreateTelegramUser(event.getFrom());
-    }
-
-    private String getGeneralPrompt(User user) {
-        return generalPrompt.formatted(
-                user.getTelegramUser().getFirstName(),
-                user.getTelegramUser().getLanguageCode()
-        );
-    }
-
-    private String getChatMessageHistoryText(long chatId) {
-        List<Record> last10 = recordService.getHistoryRecords(chatId);
-
-        return last10.stream().map(
-                r -> r.getUser().getTelegramUser().getFirstName() + ": "
-                     + r.getText()
-        ).collect(Collectors.joining("\n"));
     }
 
     @EventListener
