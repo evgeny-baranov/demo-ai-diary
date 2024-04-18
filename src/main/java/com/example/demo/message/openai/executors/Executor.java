@@ -29,11 +29,14 @@ abstract public class Executor {
     public Executor() {
     }
 
-    protected Object buildArguments(String json) throws JsonProcessingException {
-        return this.objectMapper.readValue(json, this.argumentsClass);
+    protected final Object buildArguments(String json) throws JsonProcessingException {
+        return this.objectMapper.readValue(
+                json,
+                this.argumentsClass
+        );
     }
 
-    public String execute() throws JsonProcessingException {
+    public final String execute() throws JsonProcessingException {
         log.info("Execute task: " + this.getClass());
         return this.handle(
                 this.buildArguments(

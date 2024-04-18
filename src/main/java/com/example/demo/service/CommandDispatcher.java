@@ -11,8 +11,12 @@ import org.springframework.stereotype.Component;
 public class CommandDispatcher {
     @Autowired
     TelegramBotService telegramBotService;
+
     @Autowired
     ExecutorService executorService;
+
+    @Autowired
+    ChatGptService chatGptService;
 
     @EventListener
     public void onBotCommandEvent(BotReplyEvent event) {

@@ -1,14 +1,11 @@
 package com.example.demo.message.openai.executors;
 
 import com.example.demo.domain.Task;
-import com.example.demo.service.TaskService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 public class TodoAddExecutor extends Executor {
     public TodoAddExecutor() {
-
         super();
         this.argumentsClass = DTO.class;
     }

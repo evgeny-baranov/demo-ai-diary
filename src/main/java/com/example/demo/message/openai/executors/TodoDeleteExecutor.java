@@ -1,7 +1,5 @@
 package com.example.demo.message.openai.executors;
 
-import com.example.demo.service.TaskService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.UUID;

@@ -13,26 +13,21 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
-import java.util.Arrays;
-
 @Component
 @Slf4j
 @PropertySource("application.properties")
 public class MessageDispatcher {
 
-    @Value("${bot.greetings}")
-    private String greetings;
     @Autowired
     UserService userService;
-
     @Autowired
     TelegramBotService telegramBotService;
-
     @Autowired
     ChatGptService chatGptService;
-
     @Autowired
     RecordService recordService;
+    @Value("${bot.greetings}")
+    private String greetings;
 
     @EventListener
     void onStartMessageReceived(StartMenuEvent event) {

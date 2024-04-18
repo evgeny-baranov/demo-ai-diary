@@ -6,7 +6,6 @@ import com.example.demo.message.openai.executors.Executor;
 import com.example.demo.message.openai.executors.TodoAddExecutor;
 import com.example.demo.message.openai.executors.TodoDeleteExecutor;
 import com.example.demo.message.openai.executors.TodoListExecutor;
-import org.apache.catalina.core.ApplicationContext;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
