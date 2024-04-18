@@ -4,8 +4,8 @@ import com.example.demo.config.TodoToolsConfig;
 import com.example.demo.domain.Record;
 import com.example.demo.domain.User;
 import com.example.demo.events.BotReplyEvent;
-import com.example.demo.message.openai.CompletionResponse;
 import com.example.demo.message.openai.CompletionRequest;
+import com.example.demo.message.openai.CompletionResponse;
 import com.example.demo.message.openai.Message;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,9 +58,6 @@ public class ChatGptServiceImpl implements ChatGptService {
                 .map(
                         record -> {
                             try {
-                                log.info(
-                                        record.getChatRole() + " : " +
-                                        record.getText());
                                 return new Message(
                                         record.getChatRole(),
                                         record.getText()
@@ -69,7 +66,7 @@ public class ChatGptServiceImpl implements ChatGptService {
                                 throw new RuntimeException(e);
                             }
                         }
-                ).forEach(request::addMessage);
+                ).forEachOrdered(request::addMessage);
 
         // add new user message
         request.addMessage(new Message(
@@ -84,6 +81,10 @@ public class ChatGptServiceImpl implements ChatGptService {
 
         request.addTool(
                 todoToolsConfig.buildDeleteTool()
+        );
+
+        request.addTool(
+                todoToolsConfig.buildListTool()
         );
 
         CompletionResponse response = restTemplate.postForObject(
@@ -101,6 +102,6 @@ public class ChatGptServiceImpl implements ChatGptService {
                                 chatId
                         )
                 ))
-                .forEach(choice -> this.eventPublisher.publishEvent(choice));
+                .forEachOrdered(choice -> this.eventPublisher.publishEvent(choice));
     }
 }

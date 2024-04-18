@@ -2,13 +2,18 @@ package com.example.demo.service;
 
 import com.example.demo.domain.Record;
 import com.example.demo.domain.User;
-import com.example.demo.events.*;
+import com.example.demo.events.MessageContainerEvent;
+import com.example.demo.events.PhotoMessageEvent;
+import com.example.demo.events.StartMenuEvent;
+import com.example.demo.events.TextMessageEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
+
+import java.util.Arrays;
 
 @Component
 @Slf4j

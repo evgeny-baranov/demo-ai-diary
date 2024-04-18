@@ -1,6 +1,5 @@
 package com.example.demo.message.openai;
 
-import com.example.demo.message.openai.Message;
 import lombok.Data;
 
 import java.util.List;
