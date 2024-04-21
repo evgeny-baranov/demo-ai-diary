@@ -1,11 +1,9 @@
 package com.example.demo.service;
 
-import com.example.demo.domain.Record;
 import com.example.demo.domain.User;
-import com.example.demo.events.MessageContainerEvent;
-import com.example.demo.events.PhotoMessageEvent;
-import com.example.demo.events.StartMenuEvent;
-import com.example.demo.events.TextMessageEvent;
+import com.example.demo.events.TelegramPhotoMessageEvent;
+import com.example.demo.events.TelegramStartMenuEvent;
+import com.example.demo.events.TelegramTextMessageEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,21 +15,16 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @PropertySource("application.properties")
 public class MessageDispatcher {
-
-    @Autowired
-    UserService userService;
     @Autowired
     TelegramBotService telegramBotService;
     @Autowired
     ChatGptService chatGptService;
-    @Autowired
-    RecordService recordService;
     @Value("${bot.greetings}")
     private String greetings;
 
     @EventListener
-    void onStartMessageReceived(StartMenuEvent event) {
-        User user = getUser(event);
+    void onStartMessageReceived(TelegramStartMenuEvent event) {
+        User user = event.getUser();
         telegramBotService.sendMessage(
                 event.getChatId(),
                 greetings.formatted(
@@ -41,38 +34,23 @@ public class MessageDispatcher {
     }
 
     @EventListener
-    void onTextMessageReceived(TextMessageEvent event) {
+    void onTextMessageReceived(TelegramTextMessageEvent event) {
         try {
-            chatGptService.makeCompletionRequest(
+            chatGptService.makeUserCompletionRequest(
                     event.getChatId(),
-                    getUser(event),
-                    event.getMessageText()
+                    event.getUser(),
+                    event.getTelegramMessage().getText()
             );
         } catch (Exception error) {
             log.error(error.getMessage());
         }
     }
 
-    private User getUser(MessageContainerEvent event) {
-        return userService.addOrCreateTelegramUser(event.getFrom());
-    }
-
     @EventListener
-    void onPhotoMessageReceived(PhotoMessageEvent event) {
+    void onPhotoMessageReceived(TelegramPhotoMessageEvent event) {
         telegramBotService.sendMessage(
                 event.getChatId(),
                 "Sorry, i can not understand photo messages, but we are working on it."
         );
-    }
-
-    @EventListener
-    void onAnyMessage(MessageContainerEvent event) {
-        User user = getUser(event);
-        Record r = new Record();
-        r.setUser(user);
-        r.setMessageType(event.getMessageType());
-        r.setText(event.getMessageText());
-        r.setChatId(event.getChatId());
-        recordService.saveRecord(r);
     }
 }
