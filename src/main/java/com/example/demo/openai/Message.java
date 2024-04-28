@@ -32,12 +32,39 @@ public class Message {
         this.content = new ObjectMapper().writeValueAsString(content);
     }
 
+    public Message(List<ContentItem> content) {
+        this.role = MessageRole.user;
+        this.content = content;
+    }
+
     public enum MessageRole {
         user,
         assistant,
         system,
         function,
         tool,
+    }
+
+    @Data
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public static class ContentItem {
+        Type type = Type.text;
+        String text;
+        ImageUrl image_url;
+
+        public ContentItem(String text) {
+            this.text = text;
+        }
+
+        public ContentItem(ImageUrl imageUrl) {
+            this.type = Type.image_url;
+            this.image_url = imageUrl;
+        }
+
+        public enum Type {text, image_url}
+
+        public record ImageUrl(String url) {
+        }
     }
 
     @Data

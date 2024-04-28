@@ -10,14 +10,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
+import org.telegram.telegrambots.meta.api.methods.GetFile;
 import org.telegram.telegrambots.meta.api.methods.commands.SetMyCommands;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.objects.Message;
+import org.telegram.telegrambots.meta.api.objects.PhotoSize;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.commands.BotCommand;
 import org.telegram.telegrambots.meta.api.objects.commands.scope.BotCommandScopeDefault;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 @Component
@@ -125,5 +129,22 @@ public class TelegramBotService extends TelegramLongPollingBot {
         } catch (TelegramApiException e) {
             log.error(e.getMessage());
         }
+    }
+
+    public String getFileUrl(Message message) throws TelegramApiException {
+        if (message.getPhoto() == null || message.getPhoto().isEmpty()) {
+            throw new TelegramApiException("No photos available in the message.");
+        }
+
+        // Find the tallest photo
+        PhotoSize maxPhoto = message.getPhoto().stream()
+                .max(Comparator.comparingInt(PhotoSize::getHeight))
+                .orElseThrow(() -> new TelegramApiException("Failed to find the largest photo."));
+
+        // Create a GetFile method instance with the file ID of the tallest photo
+        GetFile getFile = new GetFile(maxPhoto.getFileId());
+
+        // Execute the getFile request and return the URL
+        return execute(getFile).getFileUrl(this.getBotToken());
     }
 }

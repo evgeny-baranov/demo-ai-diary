@@ -6,8 +6,8 @@ import org.springframework.context.ApplicationEvent;
 
 @Getter
 abstract public class ChatEvent extends ApplicationEvent {
-    protected User user;
-    protected long chatId;
+    protected final User user;
+    protected final long chatId;
 
     public ChatEvent(
             long chatId,

@@ -93,6 +93,15 @@ public class ChatGptServiceImpl implements ChatGptService {
         makeRequest(chatId, user, request);
     }
 
+    @Override
+    public void makeCompletionRequest(long chatId, User user, Message message) {
+        this.makeCompletionRequest(
+                chatId,
+                user,
+                List.of(message)
+        );
+    }
+
     private CompletionRequest getCompletionRequest(long chatId, User user) {
         CompletionRequest request = new CompletionRequest();
 

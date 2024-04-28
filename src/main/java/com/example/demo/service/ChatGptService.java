@@ -19,4 +19,6 @@ public interface ChatGptService {
             User user,
             List<Message> messageList
     );
+
+    void makeCompletionRequest(long chatId, User user, Message message);
 }

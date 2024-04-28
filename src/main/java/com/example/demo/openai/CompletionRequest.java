@@ -9,8 +9,8 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 public class CompletionRequest {
-        private String model = "gpt-3.5-turbo";
-//    private String model = "gpt-4-turbo";
+//        private String model = "gpt-3.5-turbo";
+    private String model = "gpt-4-turbo";
     private List<Message> messages = new ArrayList<>();
     private List<FunctionTool> tools;
 
