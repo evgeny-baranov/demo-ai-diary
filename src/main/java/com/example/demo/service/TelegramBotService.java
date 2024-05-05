@@ -1,10 +1,11 @@
 package com.example.demo.service;
 
-import com.example.demo.config.BotConfig;
+import com.example.demo.config.TelegramBotConfig;
 import com.example.demo.domain.User;
 import com.example.demo.events.TelegramPhotoMessageEvent;
 import com.example.demo.events.TelegramStartMenuEvent;
 import com.example.demo.events.TelegramTextMessageEvent;
+import com.example.demo.events.TelegramVoiceMessageEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
@@ -13,6 +14,7 @@ import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.GetFile;
 import org.telegram.telegrambots.meta.api.methods.commands.SetMyCommands;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.objects.File;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.PhotoSize;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -27,16 +29,14 @@ import java.util.List;
 @Component
 @Slf4j
 public class TelegramBotService extends TelegramLongPollingBot {
-
-    final BotConfig config;
+    TelegramBotConfig telegramBotConfig;
     @Autowired
     ApplicationEventPublisher eventPublisher;
-
     @Autowired
     UserService userService;
 
-    public TelegramBotService(BotConfig config) {
-        this.config = config;
+    public TelegramBotService(TelegramBotConfig telegramBotConfig) {
+        this.telegramBotConfig = telegramBotConfig;
         List<BotCommand> botCommandList = new ArrayList<>();
         botCommandList.add(
                 new BotCommand(
@@ -65,12 +65,12 @@ public class TelegramBotService extends TelegramLongPollingBot {
 
     @Override
     public String getBotUsername() {
-        return config.getBotName();
+        return telegramBotConfig.getName();
     }
 
     @Override
     public String getBotToken() {
-        return config.getToken();
+        return telegramBotConfig.getToken();
     }
 
     @Override
@@ -85,6 +85,16 @@ public class TelegramBotService extends TelegramLongPollingBot {
             if (update.getMessage().hasPhoto()) {
                 eventPublisher.publishEvent(
                         new TelegramPhotoMessageEvent(
+                                chatId,
+                                user,
+                                update.getMessage()
+                        )
+                );
+            }
+
+            if (update.getMessage().hasVoice()) {
+                eventPublisher.publishEvent(
+                        new TelegramVoiceMessageEvent(
                                 chatId,
                                 user,
                                 update.getMessage()
@@ -119,6 +129,19 @@ public class TelegramBotService extends TelegramLongPollingBot {
         }
     }
 
+    public void sendReplyToMessage(long chatId, String textToSend, Integer replyToMessageId) {
+        SendMessage message = new SendMessage();
+        message.setChatId(String.valueOf(chatId));
+        message.setText(textToSend);
+        message.setReplyToMessageId(replyToMessageId);
+
+        try {
+            execute(message);
+        } catch (TelegramApiException e) {
+            log.error(e.getMessage());
+        }
+    }
+
     public void sendMessage(long chatId, String textToSend) {
         SendMessage message = new SendMessage();
         message.setChatId(String.valueOf(chatId));
@@ -131,7 +154,7 @@ public class TelegramBotService extends TelegramLongPollingBot {
         }
     }
 
-    public String getFileUrl(Message message) throws TelegramApiException {
+    public String getPhotoUrl(Message message) throws TelegramApiException {
         if (message.getPhoto() == null || message.getPhoto().isEmpty()) {
             throw new TelegramApiException("No photos available in the message.");
         }
@@ -146,5 +169,12 @@ public class TelegramBotService extends TelegramLongPollingBot {
 
         // Execute the getFile request and return the URL
         return execute(getFile).getFileUrl(this.getBotToken());
+    }
+
+    public String getVoiceUrl(Message message) throws TelegramApiException {
+        GetFile getFile = new GetFile(message.getVoice().getFileId());
+
+        File file = execute(getFile);
+        return file.getFileUrl(getBotToken());
     }
 }

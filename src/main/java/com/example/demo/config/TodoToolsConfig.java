@@ -1,99 +1,71 @@
 package com.example.demo.config;
 
 import com.example.demo.openai.FunctionTool;
-import lombok.Getter;
-import lombok.Setter;
-import org.springframework.beans.factory.annotation.Value;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import lombok.Data;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
-import org.springframework.stereotype.Component;
 
-@Getter
-@Setter
-@Component
+import java.util.ArrayList;
+import java.util.List;
+
 @Configuration
-@PropertySource("application.properties")
+@ConfigurationProperties(prefix = "todo")
+@Data
 public class TodoToolsConfig {
-
-    @Value("${todo.add.name}")
-    private String addName;
-
-    @Value("${todo.add.description}")
-    private String addDescription;
-
-    @Value("${todo.add.property.title.name}")
-    private String addPropertyTitleName;
-
-    @Value("${todo.add.property.title.description}")
-    private String addPropertyTitleDescription;
-
-    @Value("${todo.add.property.title.required}")
-    private boolean addPropertyTitleRequired;
-
-    @Value("${todo.delete.name}")
-    private String deleteName;
-
-    @Value("${todo.delete.description}")
-    private String deleteDescription;
-
-    @Value("${todo.delete.property.id.name}")
-    private String deletePropertyIdName;
-
-    @Value("${todo.delete.property.id.description}")
-    private String deletePropertyIdDescription;
-
-    @Value("${todo.delete.property.id.required}")
-    private boolean deletePropertyIdRequired;
-
-    @Value("${todo.list.name}")
-    private String listName;
-
-    @Value("${todo.list.description}")
-    private String listDescription;
+    private ToolConfig add;
+    private ToolConfig delete;
+    private ToolConfig list;
 
     public FunctionTool buildAddTool() {
-        FunctionTool tool = new FunctionTool(
-                new FunctionTool.Function(
-                        addName,
-                        addDescription
-                )
-        );
-
-        tool.getFunction().getParameters().addProperty(
-                addPropertyTitleName,
-                new FunctionTool.Function.Parameters.Property("string", addPropertyTitleDescription),
-                addPropertyTitleRequired
-        );
-
-        return tool;
+        return this.buildTool(add);
     }
 
     public FunctionTool buildDeleteTool() {
+        return this.buildTool(delete);
+    }
+
+    public FunctionTool buildListTool() {
+        return this.buildTool(list);
+    }
+
+    private FunctionTool buildTool(ToolConfig toolConfig) {
         FunctionTool tool = new FunctionTool(
-                new FunctionTool.Function(
-                        deleteName,
-                        deleteDescription
-                )
+                new FunctionTool.Function(toolConfig.name, toolConfig.description)
         );
 
-        tool.getFunction().getParameters().addProperty(
-                deletePropertyIdName,
-                new FunctionTool.Function.Parameters.Property(
-                        "string",
-                        deletePropertyIdDescription
-                ),
-                deletePropertyIdRequired
+        toolConfig.properties.forEach(
+                property ->
+                        tool.getFunction().getParameters().addProperty(
+                                property.name,
+                                new FunctionTool.Function.Parameters.Property(
+                                        "string",
+                                        property.getDescription()
+                                ),
+                                property.isRequired()
+                        )
         );
 
         return tool;
     }
 
-    public FunctionTool buildListTool() {
-        return new FunctionTool(
-                new FunctionTool.Function(
-                        listName,
-                        listDescription
-                )
-        );
+    @Data
+    public static class ToolConfig {
+        @NotEmpty
+        private String name;
+        @NotEmpty
+        private String description;
+        @NotNull
+        private List<Property> properties = new ArrayList<>();
+
+        @Data
+        public static class Property {
+            @NotEmpty
+            private String name;
+            @NotEmpty
+            private String description;
+            private boolean required;
+        }
     }
 }

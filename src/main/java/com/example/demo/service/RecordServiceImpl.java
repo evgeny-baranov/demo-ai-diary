@@ -2,7 +2,6 @@ package com.example.demo.service;
 
 import com.example.demo.domain.Record;
 import com.example.demo.domain.RecordRepository;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -13,7 +12,6 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 
-@Slf4j
 @Service
 public class RecordServiceImpl implements RecordService {
 
@@ -21,7 +19,6 @@ public class RecordServiceImpl implements RecordService {
     private RecordRepository recordRepository;
 
     public Record saveRecord(Record record) {
-        log.info(record.toString());
         return recordRepository.save(record);
     }
 

@@ -1,14 +1,14 @@
 package com.example.demo.openai;
 
 import lombok.Data;
-import lombok.NonNull;
+import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Data
-public class CompletionRequest {
-    @NonNull
+@NoArgsConstructor
+public class VisionRequest {
     private String model;
     private List<Message> messages = new ArrayList<>();
     private List<FunctionTool> tools = new ArrayList<>();
